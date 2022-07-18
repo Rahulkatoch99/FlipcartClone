@@ -1,5 +1,9 @@
+import { useState } from "react";
+
 import { Box, Button, styled, Typography } from "@mui/material";
 import ShoppingCart from "@mui/icons-material/ShoppingCart";
+
+import { LoginDilog } from "../Login/LoginDilog";
 
 const Wrapper = styled(Box)`
   display: flex;
@@ -29,9 +33,16 @@ const LoginButton = styled(Button)`
 `;
 
 export const CustomButtons = () => {
+  const [open, setOpen] = useState(false);
+
+  const openDialog = () => {
+    setOpen(true);
+  };
   return (
     <Wrapper>
-      <LoginButton variant="contained">Login</LoginButton>
+      <LoginButton variant="contained" onClick={() => openDialog()}>
+        Login
+      </LoginButton>
       <Typography style={{ marginTop: 3, width: 135 }}>
         Become a seller
       </Typography>
@@ -40,6 +51,7 @@ export const CustomButtons = () => {
         <ShoppingCart />
         <Typography>Cart</Typography>
       </Container>
+      <LoginDilog open={open} setOpen={setOpen} />
     </Wrapper>
   );
 };
