@@ -1,6 +1,7 @@
 import { AppBar, Toolbar, styled, Box, Typography } from "@mui/material";
 import { Search } from "./Search";
 import { CustomButtons } from "./CustomButtons";
+// import Profile from "./Profile.js";
 
 const StyledHeader = styled(AppBar)`
   heigth: 55px;

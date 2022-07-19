@@ -3,15 +3,19 @@ import {
   Dialog,
   TextField,
   Typography,
+  DialogContent,
   Box,
   styled,
 } from "@mui/material";
-import { useState } from "react";
-import { authenticateSignup } from "../../service/api.js";
+import { useState, useContext, useEffect } from "react";
+import { authenticateSignup, authenticateLogin } from "../../service/api.js";
+import { DataContext } from "../../context/DataProvider.js";
 
-const Component = styled(Box)`
+const Component = styled(DialogContent)`
   heigth: 70vh;
   width: 90vh;
+  padding: 0;
+  padding-top: 0;
 `;
 
 const Image = styled(Box)`
@@ -60,6 +64,13 @@ const Text = styled(Typography)`
   font-size: 12px;
   color: #878787;
 `;
+const Error = styled(Typography)`
+  font-size: 10px;
+  color: #ff6161;
+  line-height: 0;
+  margin-top: 10px;
+  font-weight: 600;
+`;
 
 const CreateAccount = styled(Typography)`
   font-size: 14px;
@@ -68,6 +79,20 @@ const CreateAccount = styled(Typography)`
   font-weigth: 600;
   cursor: pointer;
 `;
+
+const loginInitialValues = {
+  username: "",
+  password: "",
+};
+
+const SignupInitialValues = {
+  firstname: "",
+  lastname: "",
+  username: "",
+  email: "",
+  password: "",
+  phone: "",
+};
 
 const accountInitialValues = {
   login: {
@@ -82,39 +107,56 @@ const accountInitialValues = {
   },
 };
 
-const SignupInitialValues = {
-  firstname: "",
-  lastname: "",
-  username: "",
-  email: "",
-  password: "",
-  phone: "",
-};
-
 export const LoginDilog = ({ open, setOpen }) => {
   const [account, toggleAccount] = useState(accountInitialValues.login);
   const [signup, setSignup] = useState(SignupInitialValues);
+  const [login, setLogin] = useState(loginInitialValues);
+  const { setAccount } = useContext(DataContext);
+  const [error, showError] = useState(false);
 
-  const handelClose = () => {
-    setOpen(false);
-    toggleAccount(accountInitialValues.login);
-  };
-  const toggleSignup = () => {
-    toggleAccount(accountInitialValues.signup);
+  useEffect(() => {
+    showError(false);
+  }, [login]);
+
+  const onValueChange = (e) => {
+    setLogin({ ...login, [e.target.name]: e.target.value });
   };
 
   const onInputChange = (e) => {
     setSignup({ ...signup, [e.target.name]: e.target.value });
   };
 
+  const loginUser = async () => {
+    let response = await authenticateLogin(login);
+    if (!response) showError(true);
+    else {
+      showError(false);
+      handelClose();
+      setAccount(login.username);
+    }
+  };
+
   const signupUser = async () => {
     let response = await authenticateSignup(signup);
+    if (!response) return;
+    handelClose();
+    setAccount(signup.username);
   };
+
+  const toggleSignup = () => {
+    toggleAccount(accountInitialValues.signup);
+  };
+
+  const handelClose = () => {
+    setOpen(false);
+    toggleAccount(accountInitialValues.login);
+  };
+
   return (
     <Dialog
       open={open}
       onClose={handelClose}
-      PaperProps={{ sx: { maxWidloginth: "unset" } }}
+      PaperProps={{ sx: { maxWidth: "unset" } }}
     >
       <Component>
         <Box style={{ display: "flex", heigth: "100%" }}>
@@ -127,13 +169,26 @@ export const LoginDilog = ({ open, setOpen }) => {
           </Image>
           {account.view === "login" ? (
             <Wrapper>
-              <TextField variant="standard" label="Enter Email/Mobile Number" />
-              <TextField variant="standard" label="Enter Password" />
+              <TextField
+                variant="standard"
+                name="username"
+                onChange={(e) => onValueChange(e)}
+                label="Enter Email/Mobile Number"
+              />
+              {error && (
+                <Error>Please enter valid Email ID/Mobile number</Error>
+              )}
+              <TextField
+                variant="standard"
+                name="password"
+                onChange={(e) => onValueChange(e)}
+                label="Enter Password"
+              />
               <Text>
                 By continuing, you agree to Flipcart's Term of use Privacy
                 Policy
               </Text>
-              <LoginButton>Login</LoginButton>
+              <LoginButton onClick={() => loginUser()}>Login</LoginButton>
               <Typography style={{ textAlign: "center" }}>OR</Typography>
               <RequestOTP>Request OTP</RequestOTP>
               <CreateAccount onClick={toggleSignup}>
